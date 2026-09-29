@@ -6,7 +6,12 @@ import '../../models/app_user.dart';
 import '../repositories/auth_repository.dart';
 
 class FakeAuthRepository implements AuthRepository {
-  FakeAuthRepository() : _controller = StreamController<AppUser?>.broadcast();
+  FakeAuthRepository() : _controller = StreamController<AppUser?>.broadcast() {
+    // Mirrors real FirebaseAuth.authStateChanges(), which always fires once
+    // with the current state (null, for a fresh fake session) so listeners
+    // like AuthProvider can tell "no session" apart from "still checking".
+    Future.microtask(() => _controller.add(_currentUser));
+  }
 
   final _uuid = const Uuid();
   final StreamController<AppUser?> _controller;

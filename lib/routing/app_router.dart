@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/constants/routes.dart';
+import '../features/auth/auth_gate.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/signup_screen.dart';
 import '../features/conversation_practice/conversation_practice_screen.dart';
@@ -9,7 +10,6 @@ import '../features/guest_upgrade/guest_upgrade_screen.dart';
 import '../features/home/home_shell.dart';
 import '../features/lesson_complete/lesson_complete_screen.dart';
 import '../features/lesson_detail/lesson_detail_screen.dart';
-import '../features/onboarding/onboarding_screen.dart';
 import '../features/quiz/quiz_screen.dart';
 import '../features/sentence_building/sentence_building_screen.dart';
 import '../features/skip_test/skip_test_result_screen.dart';
@@ -22,7 +22,7 @@ class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case Routes.onboarding:
-        return MaterialPageRoute(builder: (_) => const OnboardingScreen());
+        return MaterialPageRoute(builder: (_) => const AuthGate());
       case Routes.login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case Routes.signup:

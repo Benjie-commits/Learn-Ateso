@@ -9,6 +9,7 @@ class AuthProvider extends ChangeNotifier {
   AuthProvider(this._repository) {
     _subscription = _repository.authStateChanges().listen((user) {
       _user = user;
+      _isInitialized = true;
       notifyListeners();
     });
     _user = _repository.currentUser;
@@ -18,6 +19,7 @@ class AuthProvider extends ChangeNotifier {
   StreamSubscription<AppUser?>? _subscription;
 
   AppUser? _user;
+  bool _isInitialized = false;
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -26,6 +28,12 @@ class AuthProvider extends ChangeNotifier {
   bool get isSignedIn => _user != null;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+
+  /// True once the first authStateChanges event has arrived, i.e. once we
+  /// definitively know whether a session exists (real Firebase Auth
+  /// restores a persisted session asynchronously, so this distinguishes
+  /// "still checking" from "definitely signed out" for AuthGate).
+  bool get isInitialized => _isInitialized;
 
   Future<bool> _run(Future<void> Function() action) async {
     _isLoading = true;

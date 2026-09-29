@@ -44,7 +44,9 @@ class _SettingsStubScreenState extends State<SettingsStubScreen> {
                 ? const GuestUpgradePrompt(featureName: 'Settings')
                 : const ComingSoonPlaceholder(label: 'Settings', icon: Icons.settings_outlined),
           ),
-          if (kDebugMode)
+          // Firestore rules only let non-anonymous accounts write content
+          // (see firestore.rules), so guests can't seed even in debug mode.
+          if (kDebugMode && !isGuest)
             Padding(
               padding: const EdgeInsets.all(16),
               child: OutlinedButton(

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/routes.dart';
+import '../../../core/widgets/puzzle_image_reveal.dart';
 import '../../../data/repositories/content_repository.dart';
 import '../../../models/lesson.dart';
 import '../../../providers/level_list_provider.dart';
 import '../../../routing/route_args.dart';
+import '../../village/village_theme.dart';
 import 'lesson_tile.dart';
 
 class LevelCard extends StatelessWidget {
@@ -35,11 +37,16 @@ class LevelCard extends StatelessWidget {
       );
     }
 
+    final theme = themeForLevelOrder(level.order);
+
     return Card(
       child: ExpansionTile(
-        leading: Icon(
-          viewModel.isComplete ? Icons.emoji_events : Icons.menu_book_outlined,
-          color: viewModel.isComplete ? Colors.amber[700] : null,
+        leading: PuzzleImageReveal(
+          totalPieces: level.puzzle.totalPieces,
+          revealedPositions: viewModel.revealedPuzzlePositions,
+          icon: theme.puzzleIcon,
+          color: theme.color,
+          size: 48,
         ),
         title: Text(level.name),
         subtitle: Text('Puzzle: $pieces'),

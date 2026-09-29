@@ -16,16 +16,17 @@ class LevelViewModel {
     required this.locked,
     required this.completedLessonIds,
     required this.totalLessonCount,
-    required this.revealedPuzzlePieces,
+    required this.revealedPuzzlePositions,
   });
 
   final Level level;
   final bool locked;
   final Set<String> completedLessonIds;
   final int totalLessonCount;
-  final int revealedPuzzlePieces;
+  final Set<int> revealedPuzzlePositions;
 
   int get completedLessonCount => completedLessonIds.length;
+  int get revealedPuzzlePieces => revealedPuzzlePositions.length;
   bool get isComplete => completedLessonCount >= totalLessonCount && totalLessonCount > 0;
 }
 
@@ -53,7 +54,7 @@ class LevelListProvider extends ChangeNotifier {
         locked: !(progress?.unlocked ?? false),
         completedLessonIds: progress?.completedLessonIds ?? const {},
         totalLessonCount: _lessonCountByLevel[level.id] ?? level.puzzle.totalPieces,
-        revealedPuzzlePieces: progress?.revealedPuzzlePositions.length ?? 0,
+        revealedPuzzlePositions: progress?.revealedPuzzlePositions ?? const {},
       );
     }).toList();
   }

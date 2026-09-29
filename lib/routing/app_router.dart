@@ -14,6 +14,7 @@ import '../features/quiz/quiz_screen.dart';
 import '../features/sentence_building/sentence_building_screen.dart';
 import '../features/skip_test/skip_test_result_screen.dart';
 import '../features/skip_test/skip_test_screen.dart';
+import '../features/village/village_screen.dart';
 import 'route_args.dart';
 
 class AppRouter {
@@ -55,6 +56,8 @@ class AppRouter {
       case Routes.skipTestResult:
         final args = settings.arguments as SkipTestResultArgs;
         return MaterialPageRoute(builder: (_) => SkipTestResultScreen(args: args));
+      case Routes.village:
+        return MaterialPageRoute(builder: (_) => const VillageScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

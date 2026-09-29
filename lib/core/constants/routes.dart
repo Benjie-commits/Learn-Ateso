@@ -14,4 +14,5 @@ class Routes {
   static const skipTest = '/skip-test';
   static const skipTestResult = '/skip-test-result';
   static const guestUpgrade = '/guest-upgrade';
+  static const village = '/village';
 }

@@ -1,1 +1,1 @@
-{}
+{"firestore":{"rules":"firestore.rules","indexes":"firestore.indexes.json"},"flutter":{"platforms":{"android":{"default":{"projectId":"learn-ateso","appId":"1:874878587395:android:cebc57afc151513d8e7436","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"learn-ateso","configurations":{"android":"1:874878587395:android:cebc57afc151513d8e7436","ios":"1:874878587395:ios:ef8cb018e7ee0eaa8e7436"}}}}}}

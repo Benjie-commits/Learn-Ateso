@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "874878587395",
+    "project_id": "learn-ateso",
+    "storage_bucket": "learn-ateso.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:874878587395:android:cebc57afc151513d8e7436",
+        "android_client_info": {
+          "package_name": "com.soroti.cpe3106.learn_ateso"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgcSIgaPLO1bvkwz39h8D_X9AOa7QV5RE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

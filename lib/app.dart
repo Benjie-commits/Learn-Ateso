@@ -6,6 +6,9 @@ import 'core/theme/app_theme.dart';
 import 'data/fake/fake_auth_repository.dart';
 import 'data/fake/fake_content_repository.dart';
 import 'data/fake/fake_progress_repository.dart';
+import 'data/firebase/firebase_auth_repository.dart';
+import 'data/firebase/firestore_content_repository.dart';
+import 'data/firebase/firestore_progress_repository.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/content_repository.dart';
 import 'data/repositories/progress_repository.dart';
@@ -15,10 +18,13 @@ import 'providers/level_list_provider.dart';
 import 'providers/progress_provider.dart';
 import 'routing/app_router.dart';
 
-/// The single swap point for Firebase: once credentials are wired (Phase 5
-/// of the implementation plan), replace these three Fake* instances with
-/// Firebase*Repository instances. No other file needs to change, since
+/// The single swap point for backends. Firebase is used by default now that
+/// the learn-ateso project is wired up (Phase 5); pass
+/// --dart-define=USE_FIREBASE=false to fall back to the in-memory fakes for
+/// offline development. No other file needs to change either way, since
 /// everything downstream depends only on the abstract repository interfaces.
+const useFirebase = bool.fromEnvironment('USE_FIREBASE', defaultValue: true);
+
 class LearnAtesoApp extends StatelessWidget {
   const LearnAtesoApp({super.key});
 
@@ -26,9 +32,17 @@ class LearnAtesoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider<AuthRepository>(create: (_) => FakeAuthRepository()),
-        Provider<ContentRepository>(create: (_) => FakeContentRepository()),
-        Provider<ProgressRepository>(create: (_) => FakeProgressRepository()),
+        Provider<ContentRepository>(
+          create: (_) => useFirebase ? FirestoreContentRepository() : FakeContentRepository(),
+        ),
+        Provider<AuthRepository>(
+          create: (_) => useFirebase ? FirebaseAuthRepository() : FakeAuthRepository(),
+        ),
+        Provider<ProgressRepository>(
+          create: (context) => useFirebase
+              ? FirestoreProgressRepository(context.read<ContentRepository>())
+              : FakeProgressRepository(),
+        ),
         ChangeNotifierProvider(
           create: (context) => AuthProvider(context.read<AuthRepository>()),
         ),

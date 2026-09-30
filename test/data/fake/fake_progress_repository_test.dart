@@ -19,6 +19,7 @@ void main() {
 
       final result = await repo.recordLessonCompletion(
         userId: userId,
+        userName: 'Ann',
         lessonId: 'lesson_1_1',
         levelId: 'level_1',
         quizScore: 2,
@@ -36,12 +37,14 @@ void main() {
 
       await repo.recordLessonCompletion(
         userId: userId,
+        userName: 'Ann',
         lessonId: 'lesson_1_1',
         levelId: 'level_1',
         quizScore: 2,
       );
       await repo.recordLessonCompletion(
         userId: userId,
+        userName: 'Ann',
         lessonId: 'lesson_1_2',
         levelId: 'level_1',
         quizScore: 2,
@@ -49,6 +52,44 @@ void main() {
 
       final level2 = await repo.watchLevelProgress(userId, 'level_2').first;
       expect(level2.unlocked, isTrue);
+    });
+
+    test('recording completions for two users ranks the leaderboard by points descending', () async {
+      final repo = FakeProgressRepository();
+
+      await repo.recordLessonCompletion(
+        userId: 'user-1',
+        userName: 'Ann',
+        lessonId: 'lesson_1_1',
+        levelId: 'level_1',
+        quizScore: 1,
+      );
+      await repo.recordLessonCompletion(
+        userId: 'user-2',
+        userName: 'Ben',
+        lessonId: 'lesson_1_1',
+        levelId: 'level_1',
+        quizScore: 5,
+      );
+
+      final leaderboard = await repo.watchLeaderboard().first;
+
+      expect(leaderboard.first.name, 'Ben');
+      expect(leaderboard.first.points, greaterThan(leaderboard.last.points));
+    });
+
+    test('a user who has only had progress initialized does not appear on the leaderboard', () async {
+      final repo = FakeProgressRepository();
+
+      // watchProgress/watchLevelProgress lazily create a zero-point
+      // UserProgress for any signed-in user; the leaderboard must not
+      // surface that until they actually complete a lesson.
+      await repo.watchProgress(userId).first;
+      await repo.watchLevelProgress(userId, 'level_1').first;
+
+      final leaderboard = await repo.watchLeaderboard().first;
+
+      expect(leaderboard, isEmpty);
     });
 
     test('passing the aptitude test unlocks the level directly', () async {

@@ -47,6 +47,7 @@ void main() {
     test('completing a lesson reveals a puzzle piece and awards points', () async {
       final result = await progressRepo.recordLessonCompletion(
         userId: userId,
+        userName: 'Ann',
         lessonId: 'lesson_1_1',
         levelId: 'level_1',
         quizScore: 2,
@@ -62,12 +63,14 @@ void main() {
     test('completing every lesson in a level auto-unlocks the next level', () async {
       await progressRepo.recordLessonCompletion(
         userId: userId,
+        userName: 'Ann',
         lessonId: 'lesson_1_1',
         levelId: 'level_1',
         quizScore: 2,
       );
       await progressRepo.recordLessonCompletion(
         userId: userId,
+        userName: 'Ann',
         lessonId: 'lesson_1_2',
         levelId: 'level_1',
         quizScore: 2,
@@ -75,6 +78,28 @@ void main() {
 
       final level2 = await progressRepo.watchLevelProgress(userId, 'level_2').first;
       expect(level2.unlocked, isTrue);
+    });
+
+    test('recordLessonCompletion writes a leaderboard entry queryable by points', () async {
+      await progressRepo.recordLessonCompletion(
+        userId: 'user-1',
+        userName: 'Ann',
+        lessonId: 'lesson_1_1',
+        levelId: 'level_1',
+        quizScore: 1,
+      );
+      await progressRepo.recordLessonCompletion(
+        userId: 'user-2',
+        userName: 'Ben',
+        lessonId: 'lesson_1_1',
+        levelId: 'level_1',
+        quizScore: 5,
+      );
+
+      final leaderboard = await progressRepo.watchLeaderboard().first;
+
+      expect(leaderboard.first.name, 'Ben');
+      expect(leaderboard.first.points, greaterThan(leaderboard.last.points));
     });
 
     test('passing the aptitude test unlocks the level directly', () async {

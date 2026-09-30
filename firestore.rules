@@ -35,6 +35,15 @@ service cloud.firestore {
       allow write: if isRegisteredUser();
     }
 
+    // Public leaderboard: a denormalized {name, points} snapshot kept
+    // separate from /users/{uid} so it can be readable by any signed-in
+    // user without exposing email addresses. Only the owning user may
+    // write their own entry.
+    match /leaderboard/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
     // Per-user data: only that user may read or write their own documents.
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;

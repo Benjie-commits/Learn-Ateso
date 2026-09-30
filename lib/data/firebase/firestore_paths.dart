@@ -10,6 +10,7 @@ class FirestorePaths {
   static const lessonContent = 'content_lessons';
   static const aptitudeTests = 'aptitudeTests';
   static const users = 'users';
+  static const leaderboard = 'leaderboard';
   static String progressSummary(String userId) => 'users/$userId/progress/summary';
   static String levelProgress(String userId) => 'users/$userId/levelProgress';
 }

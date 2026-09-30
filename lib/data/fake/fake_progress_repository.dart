@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../../models/leaderboard_entry.dart';
 import '../../models/lesson.dart';
 import '../../models/level_progress.dart';
 import '../../models/user_progress.dart';
@@ -8,9 +9,12 @@ import 'seed_data.dart';
 
 class FakeProgressRepository implements ProgressRepository {
   final Map<String, UserProgress> _progress = {};
+  final Map<String, LeaderboardEntry> _leaderboardEntries = {};
   final Map<String, Map<String, LevelProgress>> _levelProgress = {};
   final Map<String, StreamController<UserProgress>> _progressControllers = {};
   final Map<String, StreamController<LevelProgress>> _levelControllers = {};
+  StreamController<List<LeaderboardEntry>>? _leaderboardController;
+  int _leaderboardLimit = 20;
 
   String _levelKey(String userId, String levelId) => '$userId:$levelId';
 
@@ -34,6 +38,25 @@ class FakeProgressRepository implements ProgressRepository {
   void _emitLevelProgress(String userId, LevelProgress progress) {
     _levelProgress.putIfAbsent(userId, () => {})[progress.levelId] = progress;
     _levelControllers[_levelKey(userId, progress.levelId)]?.add(progress);
+  }
+
+  List<LeaderboardEntry> _computeLeaderboard() {
+    final entries = _leaderboardEntries.values.toList()
+      ..sort((a, b) => b.points.compareTo(a.points));
+    return entries.take(_leaderboardLimit).toList();
+  }
+
+  void _emitLeaderboard() {
+    _leaderboardController?.add(_computeLeaderboard());
+  }
+
+  @override
+  Stream<List<LeaderboardEntry>> watchLeaderboard({int limit = 20}) {
+    _leaderboardLimit = limit;
+    final controller = _leaderboardController ??=
+        StreamController<List<LeaderboardEntry>>.broadcast();
+    Future.microtask(() => controller.add(_computeLeaderboard()));
+    return controller.stream;
   }
 
   @override
@@ -65,6 +88,7 @@ class FakeProgressRepository implements ProgressRepository {
   @override
   Future<LevelProgress> recordLessonCompletion({
     required String userId,
+    required String userName,
     required String lessonId,
     required String levelId,
     required int quizScore,
@@ -107,6 +131,9 @@ class FakeProgressRepository implements ProgressRepository {
       userId,
       current.copyWith(points: points, streakDays: streak, lastActive: now),
     );
+    _leaderboardEntries[userId] =
+        LeaderboardEntry(userId: userId, name: userName, points: points);
+    _emitLeaderboard();
 
     return levelProgress;
   }

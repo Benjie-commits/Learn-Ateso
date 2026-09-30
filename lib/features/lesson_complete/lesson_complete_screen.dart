@@ -35,7 +35,7 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
 
   Future<void> _complete() async {
     final session = context.read<LessonSessionProvider>();
-    final userId = context.read<AuthProvider>().user!.id;
+    final user = context.read<AuthProvider>().user!;
     final contentRepository = context.read<ContentRepository>();
     final progressRepository = context.read<ProgressRepository>();
 
@@ -43,7 +43,8 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
     final level = levels.firstWhere((l) => l.id == widget.args.levelId);
 
     final result = await progressRepository.recordLessonCompletion(
-      userId: userId,
+      userId: user.id,
+      userName: user.name,
       lessonId: widget.args.lessonId,
       levelId: widget.args.levelId,
       quizScore: session.quizScore,

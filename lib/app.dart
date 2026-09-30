@@ -13,6 +13,7 @@ import 'data/repositories/auth_repository.dart';
 import 'data/repositories/content_repository.dart';
 import 'data/repositories/progress_repository.dart';
 import 'providers/auth_provider.dart';
+import 'providers/leaderboard_provider.dart';
 import 'providers/lesson_session_provider.dart';
 import 'providers/level_list_provider.dart';
 import 'providers/progress_provider.dart';
@@ -57,6 +58,9 @@ class LearnAtesoApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (context) => ProgressProvider(context.read<ProgressRepository>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => LeaderboardProvider(context.read<ProgressRepository>()),
         ),
       ],
       child: MaterialApp(

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../models/leaderboard_entry.dart';
 import '../../models/level_progress.dart';
 import '../../models/user_progress.dart';
 import '../repositories/content_repository.dart';
@@ -29,6 +30,18 @@ class FirestoreProgressRepository implements ProgressRepository {
   }
 
   @override
+  Stream<List<LeaderboardEntry>> watchLeaderboard({int limit = 20}) {
+    return _firestore
+        .collection(FirestorePaths.leaderboard)
+        .orderBy('points', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => LeaderboardEntry.fromMap(doc.id, doc.data()))
+            .toList());
+  }
+
+  @override
   Stream<LevelProgress> watchLevelProgress(String userId, String levelId) {
     return _levelProgressDoc(userId, levelId).snapshots().asyncMap((snapshot) async {
       final data = snapshot.data();
@@ -42,6 +55,7 @@ class FirestoreProgressRepository implements ProgressRepository {
   @override
   Future<LevelProgress> recordLessonCompletion({
     required String userId,
+    required String userName,
     required String lessonId,
     required String levelId,
     required int quizScore,
@@ -91,15 +105,20 @@ class FirestoreProgressRepository implements ProgressRepository {
         : UserProgress.empty();
     final now = DateTime.now();
     final isNewDay = now.difference(current.lastActive).inHours >= 20;
+    final newPoints = current.points + 10 + quizScore;
     await progressDoc.set(
       current
           .copyWith(
-            points: current.points + 10 + quizScore,
+            points: newPoints,
             streakDays: isNewDay ? current.streakDays + 1 : current.streakDays,
             lastActive: now,
           )
           .toMap(),
     );
+    await _firestore
+        .collection(FirestorePaths.leaderboard)
+        .doc(userId)
+        .set(LeaderboardEntry(userId: userId, name: userName, points: newPoints).toMap());
 
     return updated;
   }

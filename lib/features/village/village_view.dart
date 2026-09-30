@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/leaderboard_entry.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/leaderboard_provider.dart';
 import '../../providers/level_list_provider.dart';
 import '../../providers/progress_provider.dart';
 import 'village_theme.dart';
@@ -45,6 +48,8 @@ class VillageView extends StatelessWidget {
   Widget build(BuildContext context) {
     final levelProvider = context.watch<LevelListProvider>();
     final progress = context.watch<ProgressProvider>().progress;
+    final leaderboard = context.watch<LeaderboardProvider>().entries;
+    final currentUserId = context.watch<AuthProvider>().user?.id;
 
     final completedLevels = levelProvider.levelViewModels.where((vm) => vm.isComplete).toList()
       ..sort((a, b) => a.level.order.compareTo(b.level.order));
@@ -94,15 +99,66 @@ class VillageView extends StatelessWidget {
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.leaderboard_outlined, color: Theme.of(context).colorScheme.outline),
-                  const SizedBox(width: 12),
-                  const Expanded(child: Text('Leaderboard — coming soon')),
+                  Row(
+                    children: [
+                      Icon(Icons.leaderboard_outlined, color: Theme.of(context).colorScheme.outline),
+                      const SizedBox(width: 12),
+                      Text('Leaderboard', style: Theme.of(context).textTheme.titleMedium),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  if (leaderboard.isEmpty)
+                    const Text('Complete a lesson to join the leaderboard!')
+                  else
+                    for (var i = 0; i < leaderboard.length; i++)
+                      _LeaderboardRow(
+                        rank: i + 1,
+                        entry: leaderboard[i],
+                        isCurrentUser: leaderboard[i].userId == currentUserId,
+                      ),
                 ],
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LeaderboardRow extends StatelessWidget {
+  const _LeaderboardRow({
+    required this.rank,
+    required this.entry,
+    required this.isCurrentUser,
+  });
+
+  final int rank;
+  final LeaderboardEntry entry;
+  final bool isCurrentUser;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = TextStyle(
+      fontWeight: isCurrentUser ? FontWeight.bold : FontWeight.normal,
+      color: isCurrentUser ? Theme.of(context).colorScheme.primary : null,
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          SizedBox(width: 24, child: Text('$rank', style: style)),
+          Expanded(
+            child: Text(
+              isCurrentUser ? '${entry.name} (You)' : entry.name,
+              style: style,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Text('${entry.points} pts', style: style),
         ],
       ),
     );

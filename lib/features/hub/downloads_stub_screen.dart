@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/widgets/coming_soon_placeholder.dart';
 import '../../providers/auth_provider.dart';
+import '../downloads/downloads_view.dart';
 import 'widgets/guest_upgrade_prompt.dart';
 
 class DownloadsStubScreen extends StatelessWidget {
@@ -15,7 +15,7 @@ class DownloadsStubScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Downloads')),
       body: isGuest
           ? const GuestUpgradePrompt(featureName: 'Downloads')
-          : const ComingSoonPlaceholder(label: 'Downloads', icon: Icons.download_outlined),
+          : const DownloadsView(),
     );
   }
 }

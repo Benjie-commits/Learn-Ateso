@@ -3,16 +3,20 @@ import 'package:provider/provider.dart';
 
 import 'core/constants/routes.dart';
 import 'core/theme/app_theme.dart';
+import 'data/cached_content_repository.dart';
 import 'data/fake/fake_auth_repository.dart';
 import 'data/fake/fake_content_repository.dart';
 import 'data/fake/fake_progress_repository.dart';
 import 'data/firebase/firebase_auth_repository.dart';
 import 'data/firebase/firestore_content_repository.dart';
 import 'data/firebase/firestore_progress_repository.dart';
+import 'data/local/local_download_repository.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/content_repository.dart';
+import 'data/repositories/download_repository.dart';
 import 'data/repositories/progress_repository.dart';
 import 'providers/auth_provider.dart';
+import 'providers/downloads_provider.dart';
 import 'providers/leaderboard_provider.dart';
 import 'providers/lesson_session_provider.dart';
 import 'providers/level_list_provider.dart';
@@ -34,8 +38,14 @@ class LearnAtesoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<DownloadRepository>(
+          create: (_) => LocalDownloadRepository(),
+        ),
         Provider<ContentRepository>(
-          create: (_) => useFirebase ? FirestoreContentRepository() : FakeContentRepository(),
+          create: (context) => CachedContentRepository(
+            useFirebase ? FirestoreContentRepository() : FakeContentRepository(),
+            context.read<DownloadRepository>(),
+          ),
         ),
         Provider<AuthRepository>(
           create: (_) => useFirebase ? FirebaseAuthRepository() : FakeAuthRepository(),
@@ -65,6 +75,12 @@ class LearnAtesoApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (context) => QuestsProvider(context.read<ProgressRepository>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => DownloadsProvider(
+            context.read<ContentRepository>(),
+            context.read<DownloadRepository>(),
+          ),
         ),
       ],
       child: MaterialApp(

@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:learn_ateso/data/fake/fake_progress_repository.dart';
+import 'package:learn_ateso/features/quests/quest_templates.dart';
+import 'package:learn_ateso/models/weekly_quest.dart';
 
 void main() {
   group('FakeProgressRepository', () {
@@ -90,6 +92,42 @@ void main() {
       final leaderboard = await repo.watchLeaderboard().first;
 
       expect(leaderboard, isEmpty);
+    });
+
+    test('watchQuests generates 3 active quests for a brand-new user', () async {
+      final repo = FakeProgressRepository();
+      final quests = await repo.watchQuests(userId).first;
+
+      expect(quests.length, 3);
+      expect(quests.every((q) => !q.completed && q.progressValue == 0), isTrue);
+    });
+
+    test('completing lessons increments the lessonsCompleted quest and awards a bonus on completion', () async {
+      final repo = FakeProgressRepository();
+      final quests = await repo.watchQuests(userId).first;
+      final lessonsQuest = quests.firstWhere((q) => q.type == QuestType.lessonsCompleted);
+
+      const lessonIds = ['lesson_1_1', 'lesson_1_2', 'lesson_2_1', 'lesson_2_2', 'lesson_3_1'];
+      const levelIds = ['level_1', 'level_1', 'level_2', 'level_2', 'level_3'];
+
+      for (var i = 0; i < lessonsQuest.targetValue; i++) {
+        await repo.recordLessonCompletion(
+          userId: userId,
+          userName: 'Ann',
+          lessonId: lessonIds[i],
+          levelId: levelIds[i],
+          quizScore: 1,
+        );
+      }
+
+      final updatedQuests = await repo.watchQuests(userId).first;
+      final updatedLessonsQuest = updatedQuests.firstWhere((q) => q.id == lessonsQuest.id);
+      expect(updatedLessonsQuest.completed, isTrue);
+      expect(updatedLessonsQuest.progressValue, lessonsQuest.targetValue);
+
+      final progress = await repo.watchProgress(userId).first;
+      final lessonPointsOnly = lessonsQuest.targetValue * (10 + 1);
+      expect(progress.points, greaterThanOrEqualTo(lessonPointsOnly + questCompletionBonus));
     });
 
     test('passing the aptitude test unlocks the level directly', () async {

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/level_list_provider.dart';
 import '../../providers/progress_provider.dart';
+import '../../providers/quests_provider.dart';
 import 'widgets/level_card.dart';
 
 class LessonListScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
     if (userId != null) {
       context.read<LevelListProvider>().loadForUser(userId);
       context.read<ProgressProvider>().watchUser(userId);
+      context.read<QuestsProvider>().watchUser(userId);
     }
   }
 

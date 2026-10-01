@@ -1,18 +1,22 @@
 import 'dart:async';
 
+import '../../features/quests/quest_templates.dart';
 import '../../models/leaderboard_entry.dart';
 import '../../models/lesson.dart';
 import '../../models/level_progress.dart';
 import '../../models/user_progress.dart';
+import '../../models/weekly_quest.dart';
 import '../repositories/progress_repository.dart';
 import 'seed_data.dart';
 
 class FakeProgressRepository implements ProgressRepository {
   final Map<String, UserProgress> _progress = {};
   final Map<String, LeaderboardEntry> _leaderboardEntries = {};
+  final Map<String, List<WeeklyQuest>> _quests = {};
   final Map<String, Map<String, LevelProgress>> _levelProgress = {};
   final Map<String, StreamController<UserProgress>> _progressControllers = {};
   final Map<String, StreamController<LevelProgress>> _levelControllers = {};
+  final Map<String, StreamController<List<WeeklyQuest>>> _questControllers = {};
   StreamController<List<LeaderboardEntry>>? _leaderboardController;
   int _leaderboardLimit = 20;
 
@@ -56,6 +60,32 @@ class FakeProgressRepository implements ProgressRepository {
     final controller = _leaderboardController ??=
         StreamController<List<LeaderboardEntry>>.broadcast();
     Future.microtask(() => controller.add(_computeLeaderboard()));
+    return controller.stream;
+  }
+
+  List<WeeklyQuest> _getOrRegenerateQuests(String userId) {
+    final weekStart = weekStartFor(DateTime.now());
+    final existing = _quests[userId];
+    if (existing != null && existing.isNotEmpty && existing.first.weekStart == weekStart) {
+      return existing;
+    }
+    final fresh = generateWeeklyQuests(weekStart);
+    _quests[userId] = fresh;
+    return fresh;
+  }
+
+  void _emitQuests(String userId, List<WeeklyQuest> quests) {
+    _quests[userId] = quests;
+    _questControllers[userId]?.add(quests);
+  }
+
+  @override
+  Stream<List<WeeklyQuest>> watchQuests(String userId) {
+    final controller = _questControllers.putIfAbsent(
+      userId,
+      () => StreamController<List<WeeklyQuest>>.broadcast(),
+    );
+    Future.microtask(() => controller.add(_getOrRegenerateQuests(userId)));
     return controller.stream;
   }
 
@@ -122,11 +152,28 @@ class FakeProgressRepository implements ProgressRepository {
     }
 
     final current = _getOrInitProgress(userId);
-    final points = current.points + 10 + quizScore;
     final lastActive = current.lastActive;
     final now = DateTime.now();
     final isNewDay = now.difference(lastActive).inHours >= 20;
     final streak = isNewDay ? current.streakDays + 1 : current.streakDays;
+    final lessonPoints = 10 + quizScore;
+
+    final quests = _getOrRegenerateQuests(userId);
+    var bonusPoints = 0;
+    final updatedQuests = quests.map((quest) {
+      if (quest.completed) return quest;
+      final newProgress = switch (quest.type) {
+        QuestType.lessonsCompleted => quest.progressValue + 1,
+        QuestType.pointsEarned => quest.progressValue + lessonPoints,
+        QuestType.streakMaintained => streak,
+      };
+      final justCompleted = newProgress >= quest.targetValue;
+      if (justCompleted) bonusPoints += questCompletionBonus;
+      return quest.copyWith(progressValue: newProgress, completed: justCompleted);
+    }).toList();
+    _emitQuests(userId, updatedQuests);
+
+    final points = current.points + lessonPoints + bonusPoints;
     _emitProgress(
       userId,
       current.copyWith(points: points, streakDays: streak, lastActive: now),

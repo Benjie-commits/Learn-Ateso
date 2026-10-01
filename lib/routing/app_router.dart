@@ -10,6 +10,7 @@ import '../features/guest_upgrade/guest_upgrade_screen.dart';
 import '../features/home/home_shell.dart';
 import '../features/lesson_complete/lesson_complete_screen.dart';
 import '../features/lesson_detail/lesson_detail_screen.dart';
+import '../features/quests/quests_screen.dart';
 import '../features/quiz/quiz_screen.dart';
 import '../features/sentence_building/sentence_building_screen.dart';
 import '../features/skip_test/skip_test_result_screen.dart';
@@ -58,6 +59,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => SkipTestResultScreen(args: args));
       case Routes.village:
         return MaterialPageRoute(builder: (_) => const VillageScreen());
+      case Routes.quests:
+        return MaterialPageRoute(builder: (_) => const QuestsScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

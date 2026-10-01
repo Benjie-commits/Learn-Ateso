@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/constants/routes.dart';
 import '../../models/leaderboard_entry.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/leaderboard_provider.dart';
 import '../../providers/level_list_provider.dart';
 import '../../providers/progress_provider.dart';
+import '../../providers/quests_provider.dart';
 import 'village_theme.dart';
 
 /// Decay is derived live from UserProgress.lastActive rather than stored as
@@ -50,6 +52,8 @@ class VillageView extends StatelessWidget {
     final progress = context.watch<ProgressProvider>().progress;
     final leaderboard = context.watch<LeaderboardProvider>().entries;
     final currentUserId = context.watch<AuthProvider>().user?.id;
+    final quests = context.watch<QuestsProvider>().quests;
+    final completedQuests = quests.where((q) => q.completed).length;
 
     final completedLevels = levelProvider.levelViewModels.where((vm) => vm.isComplete).toList()
       ..sort((a, b) => a.level.order.compareTo(b.level.order));
@@ -96,6 +100,20 @@ class VillageView extends StatelessWidget {
               ],
             ),
           const SizedBox(height: 32),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.flag_outlined),
+              title: const Text('Weekly Quests'),
+              subtitle: Text(
+                quests.isEmpty
+                    ? 'Loading this week\'s challenges…'
+                    : '$completedQuests/${quests.length} complete this week',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).pushNamed(Routes.quests),
+            ),
+          ),
+          const SizedBox(height: 16),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),

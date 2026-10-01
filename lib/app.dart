@@ -17,6 +17,7 @@ import 'providers/leaderboard_provider.dart';
 import 'providers/lesson_session_provider.dart';
 import 'providers/level_list_provider.dart';
 import 'providers/progress_provider.dart';
+import 'providers/quests_provider.dart';
 import 'routing/app_router.dart';
 
 /// The single swap point for backends. Firebase is used by default now that
@@ -61,6 +62,9 @@ class LearnAtesoApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (context) => LeaderboardProvider(context.read<ProgressRepository>()),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => QuestsProvider(context.read<ProgressRepository>()),
         ),
       ],
       child: MaterialApp(

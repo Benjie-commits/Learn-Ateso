@@ -13,4 +13,5 @@ class FirestorePaths {
   static const leaderboard = 'leaderboard';
   static String progressSummary(String userId) => 'users/$userId/progress/summary';
   static String levelProgress(String userId) => 'users/$userId/levelProgress';
+  static String quests(String userId) => 'users/$userId/quests';
 }

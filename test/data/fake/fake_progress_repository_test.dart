@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:learn_ateso/data/fake/seed_data.dart';
 import 'package:learn_ateso/data/fake/fake_progress_repository.dart';
 import 'package:learn_ateso/features/quests/quest_templates.dart';
 import 'package:learn_ateso/models/weekly_quest.dart';
@@ -37,20 +38,15 @@ void main() {
     test('completing every lesson in a level auto-unlocks the next level', () async {
       final repo = FakeProgressRepository();
 
-      await repo.recordLessonCompletion(
-        userId: userId,
-        userName: 'Ann',
-        lessonId: 'lesson_1_1',
-        levelId: 'level_1',
-        quizScore: 2,
-      );
-      await repo.recordLessonCompletion(
-        userId: userId,
-        userName: 'Ann',
-        lessonId: 'lesson_1_2',
-        levelId: 'level_1',
-        quizScore: 2,
-      );
+      for (final lesson in SeedData.lessonsByLevel['level_1']!) {
+        await repo.recordLessonCompletion(
+          userId: userId,
+          userName: 'Ann',
+          lessonId: lesson.id,
+          levelId: 'level_1',
+          quizScore: 2,
+        );
+      }
 
       final level2 = await repo.watchLevelProgress(userId, 'level_2').first;
       expect(level2.unlocked, isTrue);

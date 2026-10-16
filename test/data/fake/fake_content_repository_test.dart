@@ -15,8 +15,11 @@ void main() {
 
     test('getLessonsForLevel returns lessons in order', () async {
       final lessons = await repo.getLessonsForLevel('level_1');
-      expect(lessons.length, 2);
+      expect(lessons, isNotEmpty);
       expect(lessons.first.order, 1);
+      for (var i = 1; i < lessons.length; i++) {
+        expect(lessons[i].order, greaterThan(lessons[i - 1].order));
+      }
     });
 
     test('getLessonContent bundles vocabulary, quiz, sentence, and dialogue', () async {

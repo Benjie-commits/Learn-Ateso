@@ -5,6 +5,7 @@ import '../features/auth/auth_gate.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/signup_screen.dart';
 import '../features/conversation_practice/conversation_practice_screen.dart';
+import '../features/games/word_match_game_screen.dart';
 import '../features/grammar_notes/grammar_notes_screen.dart';
 import '../features/guest_upgrade/guest_upgrade_screen.dart';
 import '../features/home/home_shell.dart';
@@ -61,6 +62,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const VillageScreen());
       case Routes.quests:
         return MaterialPageRoute(builder: (_) => const QuestsScreen());
+      case Routes.wordMatchGame:
+        return MaterialPageRoute(builder: (_) => const WordMatchGameScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

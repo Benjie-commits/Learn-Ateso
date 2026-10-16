@@ -36,4 +36,16 @@ abstract class ProgressRepository {
     required String levelId,
     required bool passed,
   });
+
+  /// Records points earned from a standalone mini-game (e.g. Word Match).
+  /// Unlike [recordLessonCompletion], this does not touch streak or
+  /// level/lesson progress — it only updates [UserProgress.points], any
+  /// active `pointsEarned`-type weekly quest, and the public leaderboard
+  /// entry. [userName] is denormalized onto the leaderboard entry, same as
+  /// [recordLessonCompletion].
+  Future<void> recordMiniGameScore({
+    required String userId,
+    required String userName,
+    required int pointsEarned,
+  });
 }

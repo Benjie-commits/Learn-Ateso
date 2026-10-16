@@ -16,4 +16,5 @@ class Routes {
   static const guestUpgrade = '/guest-upgrade';
   static const village = '/village';
   static const quests = '/quests';
+  static const wordMatchGame = '/word-match-game';
 }

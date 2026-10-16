@@ -193,4 +193,38 @@ class FirestoreProgressRepository implements ProgressRepository {
     await levelDoc.set(updated.toMap());
     return updated;
   }
+
+  @override
+  Future<void> recordMiniGameScore({
+    required String userId,
+    required String userName,
+    required int pointsEarned,
+  }) async {
+    final quests = await _getOrRegenerateQuests(userId);
+    var bonusPoints = 0;
+    final updatedQuests = quests.map((quest) {
+      if (quest.completed || quest.type != QuestType.pointsEarned) return quest;
+      final newProgress = quest.progressValue + pointsEarned;
+      final justCompleted = newProgress >= quest.targetValue;
+      if (justCompleted) bonusPoints += questCompletionBonus;
+      return quest.copyWith(progressValue: newProgress, completed: justCompleted);
+    }).toList();
+    final questBatch = _firestore.batch();
+    for (final quest in updatedQuests) {
+      questBatch.set(_questsCollection(userId).doc(quest.id), quest.toMap());
+    }
+    await questBatch.commit();
+
+    final progressDoc = _progressDoc(userId);
+    final progressSnapshot = await progressDoc.get();
+    final current = progressSnapshot.data() != null
+        ? UserProgress.fromMap(progressSnapshot.data()!)
+        : UserProgress.empty();
+    final newPoints = current.points + pointsEarned + bonusPoints;
+    await progressDoc.set(current.copyWith(points: newPoints).toMap());
+    await _firestore
+        .collection(FirestorePaths.leaderboard)
+        .doc(userId)
+        .set(LeaderboardEntry(userId: userId, name: userName, points: newPoints).toMap());
+  }
 }

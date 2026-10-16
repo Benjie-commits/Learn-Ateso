@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../games/games_screen.dart';
 import '../hub/downloads_stub_screen.dart';
-import '../hub/games_stub_screen.dart';
 import '../hub/profile_stub_screen.dart';
 import '../hub/settings_stub_screen.dart';
 import '../lesson_list/lesson_list_screen.dart';
@@ -20,7 +20,7 @@ class _HomeShellState extends State<HomeShell> {
     LessonListScreen(),
     DownloadsStubScreen(),
     ProfileStubScreen(),
-    GamesStubScreen(),
+    GamesScreen(),
     SettingsStubScreen(),
   ];
 

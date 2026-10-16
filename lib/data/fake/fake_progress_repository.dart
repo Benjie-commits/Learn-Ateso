@@ -196,4 +196,29 @@ class FakeProgressRepository implements ProgressRepository {
     _emitLevelProgress(userId, updated);
     return updated;
   }
+
+  @override
+  Future<void> recordMiniGameScore({
+    required String userId,
+    required String userName,
+    required int pointsEarned,
+  }) async {
+    final quests = _getOrRegenerateQuests(userId);
+    var bonusPoints = 0;
+    final updatedQuests = quests.map((quest) {
+      if (quest.completed || quest.type != QuestType.pointsEarned) return quest;
+      final newProgress = quest.progressValue + pointsEarned;
+      final justCompleted = newProgress >= quest.targetValue;
+      if (justCompleted) bonusPoints += questCompletionBonus;
+      return quest.copyWith(progressValue: newProgress, completed: justCompleted);
+    }).toList();
+    _emitQuests(userId, updatedQuests);
+
+    final current = _getOrInitProgress(userId);
+    final points = current.points + pointsEarned + bonusPoints;
+    _emitProgress(userId, current.copyWith(points: points));
+    _leaderboardEntries[userId] =
+        LeaderboardEntry(userId: userId, name: userName, points: points);
+    _emitLeaderboard();
+  }
 }

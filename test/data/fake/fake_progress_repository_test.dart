@@ -154,5 +154,59 @@ void main() {
 
       expect(result.unlocked, isFalse);
     });
+
+    test('recordMiniGameScore adds points and updates the leaderboard without touching streak',
+        () async {
+      final repo = FakeProgressRepository();
+      await repo.watchProgress(userId).first; // lazily initialize
+
+      await repo.recordMiniGameScore(
+        userId: userId,
+        userName: 'Ann',
+        pointsEarned: 16,
+      );
+
+      final progress = await repo.watchProgress(userId).first;
+      expect(progress.points, 16);
+      expect(progress.streakDays, 0);
+
+      final leaderboard = await repo.watchLeaderboard().first;
+      expect(leaderboard.single.name, 'Ann');
+      expect(leaderboard.single.points, 16);
+    });
+
+    test('recordMiniGameScore increments a pointsEarned quest and awards the bonus on completion',
+        () async {
+      final repo = FakeProgressRepository();
+      final quests = await repo.watchQuests(userId).first;
+      final pointsQuests = quests.where((q) => q.type == QuestType.pointsEarned);
+      if (pointsQuests.isEmpty) {
+        // Unlike lessonsCompleted, a pointsEarned quest isn't guaranteed to be
+        // one of this week's 3 active quests — the pool rotates by real
+        // calendar week (see quest_templates.dart) and there's no injectable
+        // clock to pin it in a test. Skip rather than flake.
+        markTestSkipped('no pointsEarned quest active this week');
+        return;
+      }
+      final pointsQuest = pointsQuests.first;
+
+      await repo.recordMiniGameScore(
+        userId: userId,
+        userName: 'Ann',
+        pointsEarned: pointsQuest.targetValue,
+      );
+
+      final updatedQuests = await repo.watchQuests(userId).first;
+      final updatedPointsQuest = updatedQuests.firstWhere((q) => q.id == pointsQuest.id);
+      expect(updatedPointsQuest.completed, isTrue);
+      expect(updatedPointsQuest.progressValue, pointsQuest.targetValue);
+
+      // Other quest types must be untouched by a mini-game score.
+      final otherQuests = updatedQuests.where((q) => q.type != QuestType.pointsEarned);
+      expect(otherQuests.every((q) => q.progressValue == 0 && !q.completed), isTrue);
+
+      final progress = await repo.watchProgress(userId).first;
+      expect(progress.points, pointsQuest.targetValue + questCompletionBonus);
+    });
   });
 }

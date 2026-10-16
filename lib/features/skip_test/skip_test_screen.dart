@@ -92,6 +92,11 @@ class _SkipTestScreenState extends State<SkipTestScreen> {
                       QuizOptionTile(
                         label: question.options[i],
                         selected: selected == i,
+                        // A skip/aptitude test is graded as pass/fail at the
+                        // end (see _finish) - showing right/wrong per
+                        // question here would let the test be gamed.
+                        isCorrectAnswer: i == question.correctOptionIndex,
+                        revealResult: false,
                         onTap: () => setState(() => _answers[_questionIndex] = i),
                       ),
                   ],

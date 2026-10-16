@@ -48,9 +48,13 @@ class _QuizScreenState extends State<QuizScreen> {
                       QuizOptionTile(
                         label: question.options[i],
                         selected: selected == i,
-                        onTap: () => context
-                            .read<LessonSessionProvider>()
-                            .answerQuizQuestion(_questionIndex, i),
+                        isCorrectAnswer: i == question.correctOptionIndex,
+                        revealResult: selected != null,
+                        onTap: selected != null
+                            ? () {}
+                            : () => context
+                                .read<LessonSessionProvider>()
+                                .answerQuizQuestion(_questionIndex, i),
                       ),
                   ],
                 ),

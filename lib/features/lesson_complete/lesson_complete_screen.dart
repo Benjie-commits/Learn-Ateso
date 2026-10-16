@@ -112,7 +112,17 @@ class _LessonCompleteScreenState extends State<LessonCompleteScreen> {
                       label: 'Back to lessons',
                       onPressed: () {
                         context.read<LessonSessionProvider>().reset();
-                        Navigator.of(context).popUntil(ModalRoute.withName(Routes.home));
+                        // Not popUntil: an instant (unanimated) multi-route
+                        // pop back through the lesson pipeline's 5-6 stacked
+                        // routes reliably freezes the screen solid on this
+                        // project's Android emulator (reproduced with both
+                        // the Impeller and Skia renderers - a known class of
+                        // Flutter engine bug around instant multi-pops, not
+                        // specific to this app's code). Pushing a fresh Home
+                        // with a normal animated transition and clearing the
+                        // stack below it avoids the same trigger.
+                        Navigator.of(context)
+                            .pushNamedAndRemoveUntil(Routes.home, (route) => false);
                       },
                     ),
                   ],

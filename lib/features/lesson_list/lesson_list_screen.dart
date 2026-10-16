@@ -18,12 +18,19 @@ class _LessonListScreenState extends State<LessonListScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final userId = context.read<AuthProvider>().user?.id;
-    if (userId != null) {
-      context.read<LevelListProvider>().loadForUser(userId);
-      context.read<ProgressProvider>().watchUser(userId);
-      context.read<QuestsProvider>().watchUser(userId);
-    }
+    // Deferred to after this build completes: LevelListProvider.loadForUser
+    // calls notifyListeners() synchronously on its first line, and calling
+    // that while this element is still mounting trips Flutter's "setState()
+    // called during build" assertion.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final userId = context.read<AuthProvider>().user?.id;
+      if (userId != null) {
+        context.read<LevelListProvider>().loadForUser(userId);
+        context.read<ProgressProvider>().watchUser(userId);
+        context.read<QuestsProvider>().watchUser(userId);
+      }
+    });
   }
 
   @override

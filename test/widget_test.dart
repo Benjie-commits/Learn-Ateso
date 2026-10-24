@@ -12,7 +12,7 @@ void main() {
     await tester.pumpWidget(const LearnAtesoApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('Learn Ateso'), findsOneWidget);
+    expect(find.byType(Image), findsOneWidget); // the Learn Ateso logo
     expect(find.text('Get started'), findsOneWidget);
     expect(find.byType(MaterialApp), findsOneWidget);
   });

@@ -40,7 +40,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lessons'),
+        title: const Text('My Lessons'),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
